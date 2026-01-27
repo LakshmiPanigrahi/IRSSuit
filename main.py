@@ -106,7 +106,7 @@ async def login(
             FROM msuserlogin
             WHERE UserCode = %s
               AND Password = %s
-              AND Active = 1
+              AND Active = b'1'
         """
         cursor.execute(query, (UserCode, Password))
         user = cursor.fetchone()
@@ -116,3 +116,4 @@ async def login(
     finally:
         cursor.close()
         conn.close()
+
