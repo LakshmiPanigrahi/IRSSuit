@@ -14,14 +14,15 @@ app.add_middleware(
 )
 
 def get_connection():
+    
     return mysql.connector.connect(
-        host=os.getenv("DB_HOST"),
-        port=int(os.getenv("DB_PORT", 3306)),
-        user=os.getenv("DB_USER"),
-        password=os.getenv("DB_PASS"),
-        database=os.getenv("DB_NAME")
+        host="srv840.hstgr.io",
+        port=3306,
+        user="u567123576_psirisha",
+        password="PnSiri@123",
+        database="u567123576_testc1"
     )
-
+    
 @app.get("/fetch")
 async def fetch_data(
     query_type: str = Query(..., description="Type of query: empRegister, group, rfid, rfidmine"),
