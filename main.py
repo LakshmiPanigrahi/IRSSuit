@@ -99,28 +99,19 @@ async def login(
 ):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
     try:
-
         query = """
             SELECT UserCode
             FROM msuserlogin
             WHERE UserCode = %s
+              AND Password = %s
               AND Active = 1
-              AND (Password = %s OR Password = %s)
         """
-
-        cursor.execute(query, (UserCode, Password, hashed_password))
+        cursor.execute(query, (UserCode, Password))
         user = cursor.fetchone()
-
         if not user:
             raise HTTPException(status_code=401, detail="Invalid credentials or inactive user")
-
-        return {
-            "success": True,
-            "userCode": user["UserCode"]
-        }
-
+        return {"success": True, "userCode": user["UserCode"]}
     finally:
         cursor.close()
         conn.close()
