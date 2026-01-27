@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Body
 from typing import Optional
 import mysql.connector
 import os
