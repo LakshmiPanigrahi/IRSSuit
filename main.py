@@ -16,11 +16,11 @@ app.add_middleware(
 def get_connection():
     
     return mysql.connector.connect(
-        host="srv840.hstgr.io",
+        host="grc360.c7uqyaey0vd1.ap-south-1.rds.amazonaws.com",
         port=3306,
-        user="u567123576_psirisha",
-        password="PnSiri@123",
-        database="u567123576_testc1"
+        user="admin",
+        password="GoodLuck25",
+        database="DB_GRC360"
     )
     
 @app.get("/fetch")
@@ -103,7 +103,7 @@ async def login(
     try:
         query = """
             SELECT UserCode
-            FROM msuserlogin
+            FROM users
             WHERE UserCode = %s
               AND Password = %s
               AND Active + 0 = 1
@@ -117,4 +117,40 @@ async def login(
         cursor.close()
         conn.close()
 
+@app.get("/control-library")
+async def control_library_data():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
 
+    try:
+        query = """
+            SELECT
+                c.control_id,
+                c.control_name,
+                c.control_type,
+                c.control_category,
+
+                p.process_name,
+
+                r.risk_name,
+                r.severity,
+                r.status AS risk_status
+
+            FROM control c
+            LEFT JOIN processes p
+                ON c.control_id = p.process_id
+            LEFT JOIN risk r
+                ON c.control_id = r.risk_id
+            ORDER BY c.control_id
+        """
+
+        cursor.execute(query)
+        return cursor.fetchall()
+
+    except mysql.connector.Error as err:
+        raise HTTPException(status_code=500, detail=f"MySQL Error: {err}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
