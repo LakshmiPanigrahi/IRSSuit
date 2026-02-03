@@ -124,19 +124,13 @@ async def control_library_data():
 
     try:
         query = """
-        SELECT
-            c.control_id,
-            c.control_name,
-            p.process_name,
-            p.process_owner,
-            p.frequency,
-            r.likelihood AS risk_level,
-            r.status AS risk_status
-        FROM control c
-        LEFT JOIN risk_control_map rcm ON c.control_id = rcm.control_id
-        LEFT JOIN risk r ON rcm.risk_id = r.risk_id
-        LEFT JOIN process p ON c.process_id = p.process_id
-        """
+                  SELECT DISTINCT c.control_id,c.control_name, p.process_name,p.process_owner, p.frequency,r.likelihood AS risk_level,r.status AS risk_status FROM control c
+                     LEFT JOIN risk_control_map rcm ON c.control_id = rcm.control_id
+                     LEFT JOIN risk r ON rcm.risk_id = r.risk_id
+                     LEFT JOIN process_subprocess_risk_map psrm ON r.risk_id = psrm.risk_id
+                     LEFT JOIN process_subprocess_map psm ON psrm.pro_subpro_id = psm.id
+                     LEFT JOIN processes p ON psm.process_id = p.process_id
+                """
         cursor.execute(query)
         return cursor.fetchall()
     finally:
