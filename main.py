@@ -124,33 +124,21 @@ async def control_library_data():
 
     try:
         query = """
-            SELECT
-                c.control_id,
-                c.control_name,
-                c.control_type,
-                c.control_category,
-
-                p.process_name,
-
-                r.risk_name,
-                r.severity,
-                r.status AS risk_status
-
-            FROM control c
-            LEFT JOIN processes p
-                ON c.control_id = p.process_id
-            LEFT JOIN risk r
-                ON c.control_id = r.risk_id
-            ORDER BY c.control_id
+        SELECT
+            c.control_id,
+            c.control_name,
+            p.process_name,
+            p.process_owner,
+            p.frequency,
+            r.likelihood AS risk_level,
+            r.status AS risk_status
+        FROM control c
+        LEFT JOIN risk_control_map rcm ON c.control_id = rcm.control_id
+        LEFT JOIN risk r ON rcm.risk_id = r.risk_id
+        LEFT JOIN process p ON c.process_id = p.process_id
         """
-
         cursor.execute(query)
         return cursor.fetchall()
-
-    except mysql.connector.Error as err:
-        raise HTTPException(status_code=500, detail=f"MySQL Error: {err}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursor.close()
         conn.close()
