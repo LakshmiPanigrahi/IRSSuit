@@ -118,20 +118,18 @@ async def login(
         conn.close()
 
 @app.get("/control_library")
-async def control_library_data(
-    search: str = Query(None)
-):
+async def control_library_data(search: str = Query(None)):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     try:
-        query = """  SELECT DISTINCT c.control_id, c.control_name,  p.process_name, p.process_owner, p.frequency, r.likelihood AS risk_level, r.status AS risk_status  FROM control c
-        LEFT JOIN risk_control_map rcm ON c.control_id = rcm.control_id
-        LEFT JOIN risk r ON rcm.risk_id = r.risk_id
-        LEFT JOIN process_subprocess_risk_map psrm ON r.risk_id = psrm.risk_id AND psrm.pro_subpro_type = 'PROCESS'
-        LEFT JOIN processes p ON psrm.pro_subpro_id = p.process_id
-        WHERE (%s IS NULL OR c.control_name LIKE %s)
-        ORDER BY c.control_name  """
+        query = """  SELECT  c.control_id, c.control_name AS title, p.process_name, p.process_owner, p.frequency, r.likelihood AS risk_level, r.status FROM control c
+                    LEFT JOIN risk_control_map rcm ON c.control_id = rcm.control_id
+                    LEFT JOIN risk r ON rcm.risk_id = r.risk_id
+                    LEFT JOIN process_subprocess_risk_map psrm ON r.risk_id = psrm.risk_id AND psrm.pro_subpro_type = 'PROCESS'
+                    LEFT JOIN process_subprocess_map psm ON psrm.pro_subpro_id = psm.process_id
+                    LEFT JOIN processes p ON psm.process_id = p.process_id
+                    WHERE (:search IS NULL OR c.control_name LIKE CONCAT('%', :search, '%'));  """
 
         like_search = f"%{search}%" if search else None
         cursor.execute(query, (search, like_search))
