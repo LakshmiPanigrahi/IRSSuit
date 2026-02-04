@@ -117,21 +117,28 @@ async def login(
         cursor.close()
         conn.close()
 
+
 @app.get("/control_library")
 async def control_library_data(search: str = Query(None)):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:
         query = """
-            SELECT c.control_id, c.control_name AS title, p.process_name, p.process_owner, p.frequency,r.likelihood AS risk_level, r.status FROM control c
+            SELECT c.control_id, c.control_name AS title, p.process_name, p.process_owner, p.frequency,
+                   r.likelihood AS risk_level, r.status
+            FROM control c
             LEFT JOIN risk_control_map rcm ON c.control_id = rcm.control_id
             LEFT JOIN risk r ON rcm.risk_id = r.risk_id
             LEFT JOIN process_subprocess_risk_map psrm ON r.risk_id = psrm.risk_id AND psrm.pro_subpro_type = 'PROCESS'
             LEFT JOIN process_subprocess_map psm ON psrm.pro_subpro_id = psm.process_id
             LEFT JOIN processes p ON psm.process_id = p.process_id
-            WHERE (%s IS NULL OR c.control_name LIKE %s)
+            WHERE (%s IS NULL OR %s = '' OR c.control_name LIKE %s)
         """
-        cursor.execute(query, (search, f"%{search}%" if search else None))
+
+        cursor.execute(
+            query,
+            (search, search, f"%{search}%")
+        )
         return cursor.fetchall()
     finally:
         cursor.close()
