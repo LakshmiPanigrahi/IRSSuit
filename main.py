@@ -117,22 +117,27 @@ async def login(
         cursor.close()
         conn.close()
 
-@app.get("/control-library")
-async def control_library_data():
+@app.get("/control_library")
+async def control_library_data(
+    search: str = Query(None)
+):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     try:
-        query = """
-                  SELECT DISTINCT c.control_id,c.control_name, p.process_name,p.process_owner, p.frequency,r.likelihood AS risk_level,r.status AS risk_status FROM control c
-                     LEFT JOIN risk_control_map rcm ON c.control_id = rcm.control_id
-                     LEFT JOIN risk r ON rcm.risk_id = r.risk_id
-                     LEFT JOIN process_subprocess_risk_map psrm ON r.risk_id = psrm.risk_id
-                     LEFT JOIN process_subprocess_map psm ON psrm.pro_subpro_id = psm.id
-                     LEFT JOIN processes p ON psm.process_id = p.process_id
-                """
-        cursor.execute(query)
+        query = """  SELECT DISTINCT c.control_id, c.control_name,  p.process_name, p.process_owner, p.frequency, r.likelihood AS risk_level, r.status AS risk_status  FROM control c
+        LEFT JOIN risk_control_map rcm ON c.control_id = rcm.control_id
+        LEFT JOIN risk r ON rcm.risk_id = r.risk_id
+        LEFT JOIN process_subprocess_risk_map psrm ON r.risk_id = psrm.risk_id AND psrm.pro_subpro_type = 'PROCESS'
+        LEFT JOIN processes p ON psrm.pro_subpro_id = p.process_id
+        WHERE (%s IS NULL OR c.control_name LIKE %s)
+        ORDER BY c.control_name  """
+
+        like_search = f"%{search}%" if search else None
+        cursor.execute(query, (search, like_search))
+
         return cursor.fetchall()
+
     finally:
         cursor.close()
         conn.close()
