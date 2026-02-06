@@ -134,7 +134,6 @@ async def control_library_data(search: str = Query(None)):
             LEFT JOIN processes p ON psm.process_id = p.process_id
             WHERE (%s IS NULL OR %s = '' OR c.control_name LIKE %s)
         """
-
         cursor.execute(
             query,
             (search, search, f"%{search}%")
@@ -143,18 +142,19 @@ async def control_library_data(search: str = Query(None)):
     finally:
         cursor.close()
         conn.close()
+        
 
 @app.get("/ai_response")
-async def ai_response(control_id: int = Query(...)):
+async def ai_response():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:
         query = """
             SELECT control_name AS result
             FROM control
-            WHERE control_id = %s
+            WHERE control_id = 1
         """
-        cursor.execute(query, (control_id,))
+        cursor.execute(query)
         return cursor.fetchone()
     finally:
         cursor.close()
