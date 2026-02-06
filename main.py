@@ -142,19 +142,18 @@ async def control_library_data(search: str = Query(None)):
     finally:
         cursor.close()
         conn.close()
-        
 
 @app.get("/ai_response")
-async def ai_response():
+async def ai_response(value: str = Query(...)):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:
         query = """
             SELECT control_name AS result
             FROM control
-            WHERE control_id = 1
+            WHERE control_name = %s
         """
-        cursor.execute(query)
+        cursor.execute(query, (value,))
         return cursor.fetchone()
     finally:
         cursor.close()
