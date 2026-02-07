@@ -151,9 +151,9 @@ async def ai_response(value: str = Query(...)):
         query = """
             SELECT control_name AS result
             FROM control
-            WHERE control_name = %s
+            WHERE control_id = 1
         """
-        cursor.execute(query, (value,))
+        cursor.execute(query)
         return cursor.fetchone()
     finally:
         cursor.close()
