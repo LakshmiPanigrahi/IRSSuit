@@ -143,8 +143,9 @@ async def control_library_data(search: str = Query(None)):
         cursor.close()
         conn.close()
 
-@app.get("/ai_response")
-async def ai_response(value: str = Query(...)):
+
+@app.post("/ai_response")
+async def ai_response(value: str = Body(...)):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     try:
